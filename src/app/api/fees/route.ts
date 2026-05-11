@@ -2,9 +2,6 @@ import { NextRequest, NextResponse } from 'next/server'
 import connectDB from '@/lib/mongodb'
 import Course from '@/models/Course'
 import { isAdminFromRequest } from '@/lib/auth'
-import { writeFile, mkdir } from 'fs/promises'
-import { join } from 'path'
-import { existsSync } from 'fs'
 
 export async function POST(req: NextRequest) {
   if (!isAdminFromRequest(req)) {
@@ -20,27 +17,24 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'courseId and file are required' }, { status: 400 })
   }
 
-  const allowedTypes = ['application/pdf']
-  if (!allowedTypes.includes(file.type)) {
+  if (file.type !== 'application/pdf') {
     return NextResponse.json({ error: 'Only PDF files are allowed' }, { status: 400 })
   }
 
-  const uploadDir = join(process.cwd(), 'public', 'uploads', 'fees')
-  if (!existsSync(uploadDir)) {
-    await mkdir(uploadDir, { recursive: true })
+  if (file.size > 5 * 1024 * 1024) {
+    return NextResponse.json({ error: 'File must be under 5MB' }, { status: 400 })
   }
 
-  const fileName = `${courseId}-${Date.now()}-${file.name}`
-  const filePath = join(uploadDir, fileName)
   const bytes = await file.arrayBuffer()
-  await writeFile(filePath, Buffer.from(bytes))
+  const base64 = Buffer.from(bytes).toString('base64')
+  const dataUrl = `data:application/pdf;base64,${base64}`
 
-  const course = await Course.findByIdAndUpdate(
-    courseId,
+  const course = await Course.findOneAndUpdate(
+    { _id: courseId },
     {
       feeDocument: {
         fileName: file.name,
-        filePath: `/uploads/fees/${fileName}`,
+        filePath: dataUrl,   // stored as data URL, served directly
         uploadedAt: new Date(),
       },
     },
@@ -67,6 +61,6 @@ export async function DELETE(req: NextRequest) {
     return NextResponse.json({ error: 'courseId required' }, { status: 400 })
   }
 
-  await Course.findByIdAndUpdate(courseId, { $unset: { feeDocument: 1 } })
+  await Course.findOneAndUpdate({ _id: courseId }, { $unset: { feeDocument: 1 } })
   return NextResponse.json({ success: true })
 }
