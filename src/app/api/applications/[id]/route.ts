@@ -23,11 +23,13 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
     params.id,
     { status, notes: notes || '', statusUpdatedAt: new Date() },
     { new: true }
-  ).populate('courseId', 'title')
+  )
 
   if (!application) {
     return NextResponse.json({ error: 'Application not found' }, { status: 404 })
   }
+
+  await application.populate('courseId', 'title')
 
   // Send email notification if requested
   if (sendEmail) {

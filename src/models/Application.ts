@@ -36,7 +36,7 @@ const ApplicationSchema = new Schema<IApplication>(
 // Unique per email + course
 ApplicationSchema.index({ email: 1, courseId: 1 }, { unique: true })
 
-const Application =
+const Application: mongoose.Model<IApplication> =
   (mongoose.models.Application as mongoose.Model<IApplication>) ||
   mongoose.model<IApplication>('Application', ApplicationSchema)
 
