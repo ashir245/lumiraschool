@@ -5,6 +5,8 @@ import connectDB from '@/lib/mongodb'
 import Course from '@/models/Course'
 import { Clock, BarChart, BookOpen, ArrowRight } from 'lucide-react'
 
+export const revalidate = 0  // ← always fetch fresh, never cache
+
 const LEVEL_COLORS: Record<string, string> = {
   beginner: 'bg-green-100 text-green-700',
   intermediate: 'bg-yellow-100 text-yellow-700',
