@@ -35,4 +35,8 @@ const CourseSchema = new Schema<ICourse>(
   { timestamps: true }
 )
 
-export default mongoose.models.Course || mongoose.model<ICourse>('Course', CourseSchema)
+const Course =
+  (mongoose.models.Course as mongoose.Model<ICourse>) ||
+  mongoose.model<ICourse>('Course', CourseSchema)
+
+export default Course
