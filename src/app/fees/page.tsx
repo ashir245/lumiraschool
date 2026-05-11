@@ -4,6 +4,7 @@ import connectDB from '@/lib/mongodb'
 import Course from '@/models/Course'
 import { Download, FileText, Clock, Info } from 'lucide-react'
 
+export const revalidate = 0  // ← always fetch fresh, never cache
 async function getCourses() {
   await connectDB()
   return Course.find().sort({ title: 1 }).lean()
