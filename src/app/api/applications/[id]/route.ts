@@ -19,8 +19,8 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
     return NextResponse.json({ error: 'Invalid status' }, { status: 400 })
   }
 
-  const application = await Application.findByIdAndUpdate(
-    params.id,
+  const application = await Application.findOneAndUpdate(
+    { _id: params.id },
     { status, notes: notes || '', statusUpdatedAt: new Date() },
     { new: true }
   )
@@ -31,7 +31,6 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
 
   await application.populate('courseId', 'title')
 
-  // Send email notification if requested
   if (sendEmail) {
     try {
       const courseName = (application.courseId as any)?.title || 'your course'
@@ -50,6 +49,6 @@ export async function DELETE(req: NextRequest, { params }: { params: { id: strin
   }
 
   await connectDB()
-  await Application.findByIdAndDelete(params.id)
+  await Application.findOneAndDelete({ _id: params.id })
   return NextResponse.json({ success: true })
 }
